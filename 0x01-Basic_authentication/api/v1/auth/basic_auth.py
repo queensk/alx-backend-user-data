@@ -6,7 +6,9 @@ from .auth import Auth
 from re import fullmatch
 import base64
 import binascii
-from typing import Tuple
+from typing import Tuple, TypeVar
+from models.user import User
+
 
 
 class BasicAuth(Auth):
@@ -55,3 +57,19 @@ class BasicAuth(Auth):
                 password = match.group('password')
                 return user, password
         return None, None
+
+
+    def user_object_from_credentials(self, user_email: str, user_pwd: str) -> TypeVar('User'):
+        """
+        returns the User instance based on his email and password.
+        """
+        if type(user_email) is str and type(user_pwd) is str:
+            try:
+                users = User.search({'email': user_email})
+            except Exception:
+                return None
+            if len(users) <= 0:
+                return None
+            if users[0].is_valid_password(user_pwd):
+                return users[0]
+        return None
