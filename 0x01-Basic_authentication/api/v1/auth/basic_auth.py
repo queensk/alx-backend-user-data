@@ -10,7 +10,6 @@ from typing import Tuple, TypeVar
 from models.user import User
 
 
-
 class BasicAuth(Auth):
     """
     Create a class BasicAuth that inherits from Auth
@@ -58,12 +57,14 @@ class BasicAuth(Auth):
                 return user, password
         return None, None
 
-
-    def user_object_from_credentials(self, user_email: str, user_pwd: str) -> TypeVar('User'):
+    def user_object_from_credentials(
+            self,
+            user_email: str,
+            user_pwd: str) -> TypeVar('User'):
         """
         returns the User instance based on his email and password.
         """
-        if type(user_email) is str and type(user_pwd) is str:
+        if isinstance(user_email, str) and isinstance(user_pwd, str):
             try:
                 users = User.search({'email': user_email})
             except Exception:
@@ -73,3 +74,13 @@ class BasicAuth(Auth):
             if users[0].is_valid_password(user_pwd):
                 return users[0]
         return None
+
+    def current_user(self, request=None) -> TypeVar('User'):
+        """
+        retrieves the User instance for a request:
+        """
+        auth_header = self.authorization_header(request)
+        b64_auth_token = self.extract_base64_authorization_header(auth_header)
+        auth_token = self.decode_base64_authorization_header(b64_auth_token)
+        email, password = self.extract_user_credentials(auth_token)
+        return self.user_object_from_credentials(email, password)
