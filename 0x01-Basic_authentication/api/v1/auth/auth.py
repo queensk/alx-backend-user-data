@@ -4,6 +4,7 @@ Manage the API authentication.
 """
 from flask import Flask, request
 from typing import List, TypeVar
+from re import match
 
 
 class Auth:
@@ -15,12 +16,17 @@ class Auth:
         """
         Returns False - path and excluded_paths will be used later.
         """
-        if path is None and excluded_paths is None or len(excluded_paths) == 0:
-            return True
-        if path[-1] != "/":
-            path += "/"
-        if path in excluded_paths:
-            return False
+        if path is not None and excluded_paths is not None:
+            for exclusion_path in map(lambda x: x.strip(), excluded_paths):
+                pattern = ''
+                if exclusion_path[-1] == '*':
+                    pattern = '{}.*'.format(exclusion_path[0:-1])
+                elif exclusion_path[-1] == '/':
+                    pattern = '{}/*'.format(exclusion_path[0:-1])
+                else:
+                    pattern = '{}/*'.format(exclusion_path)
+                if match(pattern, path):
+                    return False
         return True
 
     def authorization_header(self, request=None) -> str:
