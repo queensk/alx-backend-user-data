@@ -37,5 +37,5 @@ class BasicAuth(Auth):
                     base64_authorization_header, validate=True)
                 return decode_str.decode("utf-8")
             except (binascii.Error, UnicodeDecodeError):
-git ad                return None
+                return None
         return None
