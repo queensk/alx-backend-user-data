@@ -11,16 +11,48 @@ You can install it using pip:
 pip install -r requirements.txt
 ```
 ## Usage
-To start the web application, run the following command:
+
+Simple HTTP API for playing with `User` model.
+
+
+## Files
+
+### `models/`
+
+- `base.py`: base of all models of the API - handle serialization to file
+- `user.py`: user model
+
+### `api/v1`
+
+- `app.py`: entry point of the API
+- `views/index.py`: basic endpoints of the API: `/status` and `/stats`
+- `views/users.py`: all users endpoints
+
+
+## Setup
+
 ```
-FLASK_APP=app.py flask run
+$ pip3 install -r requirements.txt
 ```
-Then, open your browser and go to http://localhost:5000/. You should see a welcome page that does not require authentication. However, if you try to access http://localhost:5000/profile, you will be prompted to enter a username and password. The valid credentials are:
+
+
+## Run
+
 ```
-Username: holberton
-Password: school
+$ API_HOST=0.0.0.0 API_PORT=5000 python3 -m api.v1.app
 ```
-If you enter the correct credentials, you will see your profile page. Otherwise, you will see an error message.
+
+
+## Routes
+
+- `GET /api/v1/status`: returns the status of the API
+- `GET /api/v1/stats`: returns some stats of the API
+- `GET /api/v1/users`: returns the list of users
+- `GET /api/v1/users/:id`: returns an user based on the ID
+- `DELETE /api/v1/users/:id`: deletes an user based on the ID
+- `POST /api/v1/users`: creates a new user (JSON parameters: `email`, `password`, `last_name` (optional) and `first_name` (optional))
+- `PUT /api/v1/users/:id`: updates an user based on the ID (JSON parameters: `last_name` and `first_name`)
+
 
 ## Contributing
 If you want to contribute to this project, please follow these steps:
