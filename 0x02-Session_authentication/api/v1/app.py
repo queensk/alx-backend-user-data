@@ -59,6 +59,7 @@ def authenticate_user():
                 abort(403)
             request.current_user = user
 
+
 @app.errorhandler(403)
 def forbidden(error) -> str:
     """
