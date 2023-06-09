@@ -43,6 +43,9 @@ def users() -> str:
 
 @app.route('/sessions', methods=['POST'], strict_slashes=False)
 def login() -> str:
+    """
+    user login
+    """
     email = request.form.get('email')
     password = request.form.get('password')
 
@@ -57,6 +60,9 @@ def login() -> str:
 
 @app.route('/sessions', methods=['DELETE'], strict_slashes=False)
 def logout() -> str:
+    """
+    User logout
+    """
     session_id = request.cookies.get('session_id')
     user = AUTH.get_user_from_session_id(session_id)
 
@@ -65,6 +71,20 @@ def logout() -> str:
         return redirect('/')
     else:
         return abort(403)
+
+
+@app.route("/profile", methods=["GET"], strict_slashes=False)
+def profile() -> str:
+    """
+    create user session for profile
+    """
+    session_id = request.cookies.get('session_id')
+    user = AUTH.get_user_from_session_id(session_id)
+
+    if user:
+        return jsonify({'email': user.email}), 200
+    else:
+        abort(403)
 
 
 if __name__ == "__main__":
