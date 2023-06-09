@@ -71,16 +71,7 @@ class DB:
             NoResultFound: If no results are found
             InvalidRequestError: If wrong query arguments are passed
         """
-        fields, values = [], []
-        for key, value in kwargs.items():
-            if hasattr(User, key):
-                fields.append(getattr(User, key))
-                values.append(value)
-            else:
-                raise InvalidRequestError()
-        user = self._session.query(User).filter(
-            tuple_(*fields).in_([tuple(values)])
-        ).first()
+        user = self._session.query(User).filter_by(**kwargs).first()
         if user is None:
             raise NoResultFound()
         return user
@@ -91,7 +82,8 @@ class DB:
 
         Args:
             user_id (int): The ID of the user to update
-            **kwargs: Arbitrary keyword arguments to update the user's attributes
+            **kwargs: Arbitrary keyword arguments to update 
+            the user's attributes
 
         Raises:
             NoResultFound: If no user is found with the given user_id
