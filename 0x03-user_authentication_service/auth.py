@@ -148,7 +148,6 @@ class Auth:
         Raises:
             ValueError: If the reset_token is invalid.
         """
-        user = None
         try:
             user = self._db.find_user_by(reset_token=reset_token)
         except NoResultFound:
