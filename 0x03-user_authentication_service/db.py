@@ -8,6 +8,7 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.orm.session import Session
 from sqlalchemy.exc import InvalidRequestError
 from sqlalchemy.orm.exc import NoResultFound
+from sqlalchemy.exc import SQLAlchemyError
 
 from user import Base, User
 
@@ -21,9 +22,9 @@ class DB:
         """
         Initialize a new DB instance
         """
-        self._engine = create_engine("sqlite:///a.db", echo=True)
-        Base.metadata.create_all(self._engine)
+        self._engine = create_engine("sqlite:///a.db", echo=False)
         Base.metadata.drop_all(self._engine)
+        Base.metadata.create_all(self._engine)
         self.__session = None
 
     @property
@@ -38,12 +39,20 @@ class DB:
 
     def add_user(self, email: str, hashed_password: str) -> User:
         """
-        Create a new User in db
+        Add a new user to the database
+
+        Args:
+            email (str): User's email
+            hashed_password (str): User's hashed password
+
+        Returns:
+            User: The created User object
         """
         try:
-            new_user = User(email=email, hashed_password=hashed_password)
-            self._session.add(new_user)
+            user = User(email=email, hashed_password=hashed_password)
+            self._session.add(user)
             self._session.commit()
+            return user
         except Exception:
             self._session.rollback()
             new_user = None
@@ -51,18 +60,40 @@ class DB:
 
     def find_user_by(self, **kwargs) -> User:
         """
-        finds a user based on user attributes.
+        Find a user in the database by keyword arguments
+
+        Args:
+            **kwargs: Arbitrary keyword arguments to filter the query
+
+        Returns:
+            User: The first matching User object
+
+        Raises:
+            NoResultFound: If no results are found
+            InvalidRequestError: If wrong query arguments are passed
         """
-        fields, values = [], []
-        for key, value in kwargs.items():
-            if hasattr(User, key):
-                fields.append(getattr(User, key))
-                values.append(value)
-            else:
-                raise InvalidRequestError()
-        result = self._session.query(User).filter(
-            tuple_(*fields).in_([tuple(values)])
-        ).first()
-        if result is None:
+        user = self._session.query(User).filter_by(**kwargs).first()
+        if user is None:
             raise NoResultFound()
-        return result
+        return user
+
+    def update_user(self, user_id: int, **kwargs) -> None:
+        """
+        Update a user in the database by user_id and keyword arguments
+
+        Args:
+            user_id (int): The ID of the user to update
+            **kwargs: Arbitrary keyword arguments to update the user's attributes
+
+        Raises:
+            NoResultFound: If no user is found with the given user_id
+            ValueError: If an argument does not correspond to a user attribute
+        """
+        user = self.find_user_by(id=user_id)
+        for attr, value in kwargs.items():
+            if hasattr(User, attr):
+                setattr(user, attr, value)
+            else:
+                raise ValueError()
+
+        self._session.commit()
